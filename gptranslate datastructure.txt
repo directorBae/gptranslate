@@ -1,0 +1,8 @@
+셀 리스트
+ - 셀1
+ - 셀2
+ - 셀3
+ ....
+
+한 셀에는
+(텍스트1, isModified), (텍스트2, isModified), (텍스트3, isModified)...

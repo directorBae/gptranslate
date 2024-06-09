@@ -5,8 +5,11 @@ const ContentAreaStyle = styled.div`
   background-color: #fafafa;
   width: 100vw;
   height: 100vh;
-  justify-content: center;
-  align-items: center;
+  align-items: top;
+  padding-top: 50px;
+  padding-bottom: 50px;
+  padding-left: 20%;
+  padding-right: 20%;
 `;
 
 const ContentArea = ({ children }) => {

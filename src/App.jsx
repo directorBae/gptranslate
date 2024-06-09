@@ -1,9 +1,9 @@
-import MainScreen from "./view/index";
+import MainView from "./pages/main/MainScreen";
 
 const App = () => {
   return (
     <div className="App">
-      <MainScreen />
+      <MainView />
     </div>
   );
 };
