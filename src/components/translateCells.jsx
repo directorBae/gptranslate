@@ -1,16 +1,17 @@
 import styled from "styled-components";
 import caret from "textarea-caret";
 import { CSSTransition } from "react-transition-group";
+import { useSpring, animated } from "@react-spring/web";
 import "../styles.css";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 
-const TranslateCellStyle = styled.div`
+const TranslateCellStyle = styled(animated.div)`
   position: relative;
 
   display: flex;
   background-color: #ffffff;
   width: 60%;
-  height: 200px;
+  height: 120px;
 
   border: 1px solid #bcbcbc;
   border-radius: 12px;
@@ -28,7 +29,7 @@ const TranslateCellInputStyle = styled.textarea`
   display: flex;
 
   width: 100%;
-  height: auto;
+  height: 100px;
 
   border: none;
   outline: none;
@@ -36,7 +37,7 @@ const TranslateCellInputStyle = styled.textarea`
 
   font-family: Pretendard;
   font-weight: 300;
-  font-size: 32px;
+  font-size: ${(props) => (props.fontSize ? props.fontSize + "px" : "32px")};
 `;
 
 const PopupStyle = styled.button`
@@ -99,7 +100,7 @@ const LangButtonStyle = styled.button`
   background: none;
 `;
 
-const Popup = ({ top, left, show }) => {
+const Popup = ({ top, left, show, setIsTranslated, setShowPopup }) => {
   const [showSelect, setShowSelect] = useState(false);
   const popupRef = useRef(null);
 
@@ -114,8 +115,22 @@ const Popup = ({ top, left, show }) => {
       showSelect
     ) {
       setShowSelect(false);
+    } else if (popupRef.current && !popupRef.current.contains(event.target)) {
+      console.log("click outside");
+      setShowPopup(false);
     }
   };
+
+  const handleLangSelect = useCallback(
+    (lang) => () => {
+      console.log(lang);
+      setShowSelect(false);
+      setShowPopup(false);
+
+      setIsTranslated(true);
+    },
+    [setIsTranslated, setShowPopup]
+  );
 
   useEffect(() => {
     document.addEventListener("mousedown", handleClickOutside);
@@ -128,17 +143,33 @@ const Popup = ({ top, left, show }) => {
     if (showSelect) {
       return (
         <SelectPopupStyle ref={popupRef} style={{ top, left }}>
-          <LangButtonStyle>Korean</LangButtonStyle>
-          <LangButtonStyle>English</LangButtonStyle>
-          <LangButtonStyle>Japanese</LangButtonStyle>
-          <LangButtonStyle>Chinese</LangButtonStyle>
-          <LangButtonStyle>Spanish</LangButtonStyle>
-          <LangButtonStyle>French</LangButtonStyle>
+          <LangButtonStyle onClick={handleLangSelect("Korean")}>
+            Korean
+          </LangButtonStyle>
+          <LangButtonStyle onClick={handleLangSelect("English")}>
+            English
+          </LangButtonStyle>
+          <LangButtonStyle onClick={handleLangSelect("Japanese")}>
+            Japanese
+          </LangButtonStyle>
+          <LangButtonStyle onClick={handleLangSelect("Chinese")}>
+            Chinese
+          </LangButtonStyle>
+          <LangButtonStyle onClick={handleLangSelect("Spanish")}>
+            Spanish
+          </LangButtonStyle>
+          <LangButtonStyle onClick={handleLangSelect("French")}>
+            French
+          </LangButtonStyle>
         </SelectPopupStyle>
       );
     } else {
       return (
-        <PopupStyle onClick={() => popupClick()} style={{ top, left }}>
+        <PopupStyle
+          ref={popupRef}
+          onClick={() => popupClick()}
+          style={{ top, left }}
+        >
           Translate
         </PopupStyle>
       );
@@ -151,8 +182,38 @@ const Popup = ({ top, left, show }) => {
 const TranslateCell = () => {
   const [showPopup, setShowPopup] = useState(false);
   const [popupPosition, setPopupPosition] = useState({ top: 0, left: 0 });
+
+  const [fontSize, setFontSize] = useState(32);
+
   const textareaRef = useRef(null);
   const popupTimeout = useRef(null);
+  const hiddenTextareaRef = useRef(null);
+
+  const [isTranslated, setIsTranslated] = useState(false);
+
+  const animationProps = useSpring({
+    height: isTranslated ? "240px" : "120px",
+    config: { tension: 170, friction: 26 },
+  });
+
+  const getProperFontSize = (text) => {
+    const hiddenTextarea = hiddenTextareaRef.current;
+    hiddenTextarea.value = text;
+
+    let testFontSize = 32;
+    hiddenTextarea.style.fontSize = testFontSize + "px";
+
+    for (let i = 0; i < 4; i++) {
+      if (hiddenTextarea.scrollHeight > hiddenTextarea.clientHeight) {
+        testFontSize -= 4;
+        hiddenTextarea.style.fontSize = testFontSize + "px";
+      } else {
+        break;
+      }
+    }
+
+    return testFontSize;
+  };
 
   const handleInput = (event) => {
     // 사용자 입력 감지 시 팝업을 숨기고 타이머를 재설정합니다.
@@ -164,10 +225,24 @@ const TranslateCell = () => {
       const textarea = textareaRef.current;
       const caretPosition = caret(textarea);
 
+      if (textareaRef.current.value === "") {
+        return;
+      }
+
       // 커서 위치를 설정합니다.
-      setPopupPosition({ top: caretPosition.top, left: caretPosition.left });
+      if (textarea.scrollHeight > textarea.clientHeight) {
+        setPopupPosition({
+          top: textarea.offsetHeight,
+          left: caretPosition.left,
+        });
+      } else {
+        setPopupPosition({ top: caretPosition.top, left: caretPosition.left });
+      }
       setShowPopup(true);
     }, 2000); // 2초 동안 입력이 없으면 팝업을 표시
+
+    const properFontSize = getProperFontSize(event.target.value);
+    setFontSize(properFontSize);
   };
 
   const handleHover = (event) => {
@@ -182,7 +257,7 @@ const TranslateCell = () => {
       // 커서 위치를 설정합니다.
       setPopupPosition({ top: caretPosition.top, left: caretPosition.left });
       setShowPopup(true);
-    }, 2000); // 2초 동안 마우스가 올라가 있으면 팝업을 표시
+    }, 1000); // 1초 동안 마우스가 올라가 있으면 팝업을 표시
   };
 
   useEffect(() => {
@@ -191,15 +266,20 @@ const TranslateCell = () => {
         clearTimeout(popupTimeout.current);
       }
     };
-  }, []);
+  });
 
   return (
-    <TranslateCellStyle>
+    <TranslateCellStyle style={animationProps}>
       <TranslateCellInputStyle
+        fontSize={fontSize}
         placeholder="번역할 문장을 입력하세요."
         ref={textareaRef}
         onInput={handleInput}
         onMouseOver={handleHover}
+      />
+      <TranslateCellInputStyle
+        ref={hiddenTextareaRef}
+        style={{ visibility: "hidden", position: "absolute" }}
       />
       <CSSTransition
         in={showPopup}
@@ -211,6 +291,8 @@ const TranslateCell = () => {
           top={popupPosition.top + 40}
           left={popupPosition.left + 20}
           show={showPopup}
+          setIsTranslated={setIsTranslated}
+          setShowPopup={setShowPopup}
         />
       </CSSTransition>
     </TranslateCellStyle>
