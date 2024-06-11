@@ -225,7 +225,7 @@ const Popup = ({
 
       setIsTranslated(true);
 
-      const translatedText = await translateApi.translate("dev", source, lang);
+      const translatedText = await translateApi(source, lang);
       setTranslatedText(translatedText);
       const fontSize = getProperFontSize(translatedText, hiddenOutputRef);
       setOutputFontSize(fontSize);

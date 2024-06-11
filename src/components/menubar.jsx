@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { observer } from "mobx-react";
 
 const MenuBarStyle = styled.div`
   display: flex;
@@ -25,29 +26,33 @@ const TitleStyle = styled.div`
   left: 45px;
 `;
 
-const ExtraButtonTextStyle = styled.div`
+const ExtraButtonTextStyle = styled.button`
   display: flex;
   width: 93px;
   height: 20px;
-  font-family: Spoqa Han Sans Neo;
+  font-family: "Spoqa Han Sans Neo", sans-serif;
   font-weight: 400;
   font-size: 16px;
   color: #242424;
-
   align-items: center;
-
   position: absolute;
   top: 25px;
   right: 80px;
+  outline: none;
+  border: none;
+  background: none; /* 기본 버튼 배경 제거 */
+  cursor: pointer; /* 포인터 커서 추가 */
 `;
 
-const MenuBar = () => {
+const MenuBar = observer(({ vm }) => {
   return (
     <MenuBarStyle>
       <TitleStyle>GPTranslate.</TitleStyle>
-      <ExtraButtonTextStyle>API 키 관리</ExtraButtonTextStyle>
+      <ExtraButtonTextStyle onClick={() => vm.turnOnPopup()}>
+        API 키 관리
+      </ExtraButtonTextStyle>
     </MenuBarStyle>
   );
-};
+});
 
 export default MenuBar;
