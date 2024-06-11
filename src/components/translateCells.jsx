@@ -1,9 +1,10 @@
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 import caret from "textarea-caret";
 import { CSSTransition } from "react-transition-group";
 import { useSpring, animated } from "@react-spring/web";
 import "../styles.css";
 import { useState, useRef, useEffect, useCallback } from "react";
+import translateApi from "../apis/translateApi";
 
 const TranslateCellStyle = styled(animated.div)`
   position: relative;
@@ -16,9 +17,9 @@ const TranslateCellStyle = styled(animated.div)`
   border: 1px solid #bcbcbc;
   border-radius: 12px;
 
-  flex-direction: row;
-  justify-content: center;
-  align-items: flex-start;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
 
   padding: 20px;
 
@@ -38,6 +39,64 @@ const TranslateCellInputStyle = styled.textarea`
   font-family: Pretendard;
   font-weight: 300;
   font-size: ${(props) => (props.fontSize ? props.fontSize + "px" : "32px")};
+`;
+
+const TranslateCellOutputStyle = styled.div`
+  display: ${(props) => (props.$show ? "flex" : "none")};
+
+  width: 100%;
+  height: 100px;
+  overflow-y: auto;
+
+  border: none;
+  outline: none;
+
+  font-family: Pretendard;
+  font-weight: 300;
+  font-size: ${(props) => (props.fontSize ? props.fontSize + "px" : "32px")};
+`;
+
+const DividerStyle = styled.div`
+  width: 100%;
+  display: ${(props) => (props.$show ? "flex" : "none")};
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 40px 0px;
+`;
+
+const DividerLine = styled.div`
+  width: 40%;
+  height: 0px;
+
+  border: 1px solid #dadada;
+`;
+
+const spinAnimation = keyframes`
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+`;
+
+const CircularLoader = styled.div`
+  border: 3px solid #8800cc50;
+  border-top: 3px solid #8800cc;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  animation: ${spinAnimation} 2s linear infinite;
+`;
+
+const CompletedStyle = styled.div`
+  height: 30px;
+  font-family: "Pretendard";
+  font-style: italic;
+  font-weight: 800;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  text-align: center;
+
+  color: #8800cc;
 `;
 
 const PopupStyle = styled.button`
@@ -100,7 +159,45 @@ const LangButtonStyle = styled.button`
   background: none;
 `;
 
-const Popup = ({ top, left, show, setIsTranslated, setShowPopup }) => {
+const getProperFontSize = (text, reference) => {
+  const hiddenTextarea = reference.current;
+  hiddenTextarea.value = text;
+
+  let testFontSize = 32;
+  hiddenTextarea.style.fontSize = testFontSize + "px";
+
+  for (let i = 0; i < 4; i++) {
+    if (hiddenTextarea.scrollHeight > 104) {
+      testFontSize -= 4;
+      hiddenTextarea.style.fontSize = testFontSize + "px";
+    } else {
+      break;
+    }
+  }
+
+  return testFontSize;
+};
+
+const SelectiveLoader = ({ state }) => {
+  if (state) {
+    return <CompletedStyle>{"Completed!"}</CompletedStyle>;
+  } else {
+    return <CircularLoader />;
+  }
+};
+
+const Popup = ({
+  top,
+  left,
+  show,
+  source,
+  hiddenOutputRef,
+  setIsTranslated,
+  setShowPopup,
+  setTranslatedText,
+  setIsTranslateCompleted,
+  setOutputFontSize,
+}) => {
   const [showSelect, setShowSelect] = useState(false);
   const popupRef = useRef(null);
 
@@ -116,20 +213,36 @@ const Popup = ({ top, left, show, setIsTranslated, setShowPopup }) => {
     ) {
       setShowSelect(false);
     } else if (popupRef.current && !popupRef.current.contains(event.target)) {
-      console.log("click outside");
       setShowPopup(false);
     }
   };
 
   const handleLangSelect = useCallback(
-    (lang) => () => {
-      console.log(lang);
+    (lang) => async () => {
+      setIsTranslateCompleted(false);
       setShowSelect(false);
       setShowPopup(false);
 
       setIsTranslated(true);
+
+      const translatedText = await translateApi.translate("dev", source, lang);
+      setTranslatedText(translatedText);
+      const fontSize = getProperFontSize(translatedText, hiddenOutputRef);
+      setOutputFontSize(fontSize);
+
+      if (translatedText !== "") {
+        setIsTranslateCompleted(true);
+      }
     },
-    [setIsTranslated, setShowPopup]
+    [
+      setIsTranslated,
+      setShowPopup,
+      setTranslatedText,
+      source,
+      setIsTranslateCompleted,
+      hiddenOutputRef,
+      setOutputFontSize,
+    ]
   );
 
   useEffect(() => {
@@ -182,42 +295,31 @@ const Popup = ({ top, left, show, setIsTranslated, setShowPopup }) => {
 const TranslateCell = () => {
   const [showPopup, setShowPopup] = useState(false);
   const [popupPosition, setPopupPosition] = useState({ top: 0, left: 0 });
+  const [sourceText, setSourceText] = useState("");
 
   const [fontSize, setFontSize] = useState(32);
+  const [outputFontSize, setOutputFontSize] = useState(32);
 
   const textareaRef = useRef(null);
   const popupTimeout = useRef(null);
   const hiddenTextareaRef = useRef(null);
+  const hiddenOutputRef = useRef(null);
 
   const [isTranslated, setIsTranslated] = useState(false);
+  const [translatedText, setTranslatedText] = useState("");
+
+  const [isTranslateCompleted, setIsTranslateCompleted] = useState(false);
 
   const animationProps = useSpring({
-    height: isTranslated ? "240px" : "120px",
+    height: isTranslated ? "320px" : "120px",
     config: { tension: 170, friction: 26 },
   });
-
-  const getProperFontSize = (text) => {
-    const hiddenTextarea = hiddenTextareaRef.current;
-    hiddenTextarea.value = text;
-
-    let testFontSize = 32;
-    hiddenTextarea.style.fontSize = testFontSize + "px";
-
-    for (let i = 0; i < 4; i++) {
-      if (hiddenTextarea.scrollHeight > hiddenTextarea.clientHeight) {
-        testFontSize -= 4;
-        hiddenTextarea.style.fontSize = testFontSize + "px";
-      } else {
-        break;
-      }
-    }
-
-    return testFontSize;
-  };
 
   const handleInput = (event) => {
     // 사용자 입력 감지 시 팝업을 숨기고 타이머를 재설정합니다.
     setShowPopup(false);
+    setSourceText(textareaRef.current.value);
+
     if (popupTimeout.current) {
       clearTimeout(popupTimeout.current);
     }
@@ -241,7 +343,10 @@ const TranslateCell = () => {
       setShowPopup(true);
     }, 2000); // 2초 동안 입력이 없으면 팝업을 표시
 
-    const properFontSize = getProperFontSize(event.target.value);
+    const properFontSize = getProperFontSize(
+      event.target.value,
+      hiddenTextareaRef
+    );
     setFontSize(properFontSize);
   };
 
@@ -291,10 +396,27 @@ const TranslateCell = () => {
           top={popupPosition.top + 40}
           left={popupPosition.left + 20}
           show={showPopup}
+          source={sourceText}
+          hiddenOutputRef={hiddenOutputRef}
           setIsTranslated={setIsTranslated}
           setShowPopup={setShowPopup}
+          setTranslatedText={setTranslatedText}
+          setIsTranslateCompleted={setIsTranslateCompleted}
+          setOutputFontSize={setOutputFontSize}
         />
       </CSSTransition>
+      <DividerStyle $show={isTranslated}>
+        <DividerLine />
+        <SelectiveLoader state={isTranslateCompleted} />
+        <DividerLine />
+      </DividerStyle>
+      <TranslateCellOutputStyle fontSize={outputFontSize} $show={isTranslated}>
+        {translatedText}
+      </TranslateCellOutputStyle>
+      <TranslateCellInputStyle
+        ref={hiddenOutputRef}
+        style={{ visibility: "hidden", position: "absolute" }}
+      />
     </TranslateCellStyle>
   );
 };
