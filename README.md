@@ -17,20 +17,20 @@
 
 ### 기능 설명
 
-![APIKey](markdown_edit/apikey.JPG){: width="40%"}
-![HomePage](markdown_edit/home.JPG){: width="40%"}
+![APIKey](markdown_edit/apikey.JPG)
+![HomePage](markdown_edit/home.JPG)
 
 1. API 키를 추가하셔야 사용이 가능합니다. Group Key가 아니라 Personal Key(legacy)로 받으셔야 합니다. 여기서, 등록된 API 키 삭제도 가능합니다.
 
-![TranslateButton](markdown_edit/button.JPG){: width="40%"}
+![TranslateButton](markdown_edit/button.JPG)
 ![LangButton](markdown_edit/lang.JPG)
 
 2. 번역할 문장을 입력하면 자동으로 Translate 버튼이 나옵니다. 여기서 원하는 언어를 선택하시면 됩니다.
 
-![Translated](markdown_edit/translated.JPG){: width="50%"}
+![Translated](markdown_edit/translated.JPG)
 
 3. 해당 셀의 아래쪽에 번역문이 표시됩니다.
-4. - 버튼을 눌러 셀을 추가할 수도 있어요. 반대로 - 버튼을 눌러 셀을 없앨 수도 있어요. 잠금 버튼을 누르면 지워지지도, 수정되지도 않게 셀을 잠글 수 있습니다.
+4. \+ 버튼을 눌러 셀을 추가할 수도 있어요. 반대로 - 버튼을 눌러 셀을 없앨 수도 있어요. 잠금 버튼을 누르면 지워지지도, 수정되지도 않게 셀을 잠글 수 있습니다.
 
 ### 사용된 개발 스택
 
