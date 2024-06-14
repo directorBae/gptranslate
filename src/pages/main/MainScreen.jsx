@@ -1,14 +1,13 @@
 import ContentArea from "../../components/contentarea";
-import TranslateCell from "../../components/translateCells";
+import cellDataStore from "../../model/dataStore";
+import { observer } from "mobx-react";
 
-function MainView() {
+const MainView = observer(() => {
   return (
     <div>
-      <ContentArea>
-        <TranslateCell />
-      </ContentArea>
+      <ContentArea ds={cellDataStore} />
     </div>
   );
-}
+});
 
 export default MainView;

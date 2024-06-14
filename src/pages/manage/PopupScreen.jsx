@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import styled from "styled-components";
 import SubmitIcon from "../../assets/complete.svg";
-import { setCookie, getCookie } from "../../model/dataStore";
+import DeleteIcon from "../../assets/delete.svg";
+import { setCookie, getCookie, removeCookie } from "../../model/cookies";
 import { observer } from "mobx-react";
 
 const PopupScreenStyle = styled.div`
@@ -93,6 +94,14 @@ const KeyInputStyle = styled.input`
   margin: 20px;
 `;
 
+const IconContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  width: 80px;
+`;
+
 const PopupScreen = observer(({ vm }) => {
   const [key, setKey] = useState("");
   const [isKey, setIsKey] = useState(false);
@@ -124,9 +133,15 @@ const PopupScreen = observer(({ vm }) => {
     const cookieNow = getCookie("api_key");
     if (cookieNow !== undefined && cookieNow !== "") {
       setIsKey(true);
+      setKey(cookieNow);
     } else {
       setIsKey(false);
     }
+  };
+
+  const removeKey = () => {
+    removeCookie("api_key");
+    setKey("");
   };
 
   useEffect(() => {
@@ -150,12 +165,20 @@ const PopupScreen = observer(({ vm }) => {
               : "OpenAI API 키를 등록해주셔야 GPTranslate 사용이 가능합니다.\nOpenAI API 키를 등록해주세요."}
           </DescriptionStyle>
           <KeyInputStyle onChange={handleInput} value={key} />
-          <img
-            src={SubmitIcon}
-            alt="submit"
-            onClick={() => submitKey()}
-            style={{ cursor: "pointer" }}
-          />
+          <IconContainer>
+            <img
+              src={SubmitIcon}
+              alt="submit"
+              onClick={() => submitKey()}
+              style={{ cursor: "pointer" }}
+            />
+            <img
+              src={DeleteIcon}
+              alt="delete"
+              onClick={() => removeKey()}
+              style={{ cursor: "pointer" }}
+            />
+          </IconContainer>
         </PopupBoxStyle>
       </PopupScreenStyle>
     );

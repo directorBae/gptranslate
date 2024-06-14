@@ -1,14 +1,6 @@
 import axios from "axios";
-import { getCookie } from "../model/dataStore";
 
-const translateApi = async (text, to) => {
-  const api_key = getCookie("api_key");
-
-  if (api_key === undefined || api_key === "") {
-    alert("api key is not set");
-    return;
-  }
-
+const translateApi = async (api_key, text, to) => {
   const data = {
     api_key: api_key,
     lang: to,
