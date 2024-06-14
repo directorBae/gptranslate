@@ -3,6 +3,9 @@
 #secure
 .env
 
+#other file
+*.zip
+
 # dependencies
 /node_modules
 /.pnp
@@ -13,7 +16,6 @@
 
 # production
 /build
-markdown_edit/
 
 # misc
 .DS_Store
