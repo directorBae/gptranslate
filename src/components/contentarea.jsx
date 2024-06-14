@@ -45,7 +45,7 @@ const ContentArea = observer(({ ds }) => {
       {ds.cells.map((cell, index) => {
         return (
           <TranslateCell
-            key={index}
+            key={cell.id}
             index={index}
             cell={cell}
             setBefore={ds.changeBefore}

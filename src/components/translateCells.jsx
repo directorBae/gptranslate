@@ -486,7 +486,14 @@ const TranslateCell = observer(
           <img
             src={DeleteCellIcon}
             alt="delete"
-            onClick={() => deleteCell(index)}
+            onClick={
+              cell.locked
+                ? () => {
+                    return;
+                  }
+                : () => deleteCell(index)
+            }
+            style={{ cursor: "pointer" }}
           />
           <div style={{ height: "10px" }} />
           <img
@@ -495,6 +502,7 @@ const TranslateCell = observer(
             onClick={
               cell.locked ? () => unlockCell(index) : () => lockCell(index)
             }
+            style={{ cursor: "pointer" }}
           />
         </CellManageIconContainer>
       </div>

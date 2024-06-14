@@ -1,7 +1,7 @@
 import { makeAutoObservable, action } from "mobx";
 
 class CellDataStore {
-  cells = [{ before: "", after: null, locked: false }];
+  cells = [{ id: Date.now(), before: "", after: null, locked: false }];
 
   constructor() {
     makeAutoObservable(this, {
@@ -16,7 +16,7 @@ class CellDataStore {
   }
 
   addCell = () => {
-    this.cells.push({ before: "", after: null, locked: false });
+    this.cells.push({ id: Date.now(), before: "", after: null, locked: false });
   };
 
   lockCell = (index) => {
@@ -41,7 +41,7 @@ class CellDataStore {
   };
 
   resetCells = () => {
-    this.cells = [{ before: "", after: null, locked: false }];
+    this.cells = [{ id: Date.now(), before: "", after: null, locked: false }];
   };
 }
 

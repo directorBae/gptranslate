@@ -21,6 +21,10 @@ const AddCells = ({ ds }) => {
           width={60}
           height={60}
           onClick={ds.addCell}
+          style={{
+            cursor: "pointer",
+            display: `${ds.cells.length >= 10 ? "none" : "block"}`,
+          }}
         />
       </AddCellsStyle>
     </div>
