@@ -23,7 +23,7 @@ const AddCells = ({ ds }) => {
           onClick={ds.addCell}
           style={{
             cursor: "pointer",
-            display: `${ds.cells.length >= 10 ? "none" : "block"}`,
+            display: `${ds.cells.length >= 20 ? "none" : "block"}`,
           }}
         />
       </AddCellsStyle>
