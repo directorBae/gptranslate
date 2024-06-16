@@ -48,10 +48,6 @@
   "reactSnap": {
     "include": [
       "/"
-    ],
-    "puppeteerArgs": [
-      "--no-sandbox",
-      "--disable-setuid-sandbox"
     ]
   }
 }
